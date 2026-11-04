@@ -1,0 +1,55 @@
+@import './variable.css';
+
+* {
+  user-select: none;
+}
+
+body {
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.change-color-slow {
+  transition:
+    fill var(--motion-duration-slow),
+    stroke var(--motion-duration-slow),
+    color var(--motion-duration-slow),
+    background-color var(--motion-duration-slow),
+    border-color var(--motion-duration-slow);
+  transition-delay: var(--motion-duration-default);
+}
+
+.change-color-fast {
+  transition:
+    fill var(--motion-duration-default),
+    stroke var(--motion-duration-default),
+    color var(--motion-duration-default),
+    background-color var(--motion-duration-default),
+    -webkit-text-stroke var(--motion-duration-default),
+    border-color var(--motion-duration-default);
+}
+
+.change-color-fast::after,
+.change-color-fast::before {
+  transition:
+    fill var(--motion-duration-default),
+    stroke var(--motion-duration-default),
+    color var(--motion-duration-default),
+    background-color var(--motion-duration-default),
+    -webkit-text-stroke var(--motion-duration-default),
+    border-color var(--motion-duration-default);
+}
