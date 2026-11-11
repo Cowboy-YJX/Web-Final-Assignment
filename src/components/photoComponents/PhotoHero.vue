@@ -65,8 +65,8 @@ const photobox: {
   // 图片排列的总行数
   line_max: 4,
   // 源图片的实际宽高的一半
-  img_width: Math.floor(615 / 2),
-  img_height: Math.floor(820 / 2),
+  img_width: Math.floor(585 / 2),
+  img_height: Math.floor(780 / 2),
   // 图片间的上下左右间距
   img_margin: 180,
   // 所有图片纵横排列之后的总宽高，用作图片超出范围的界限判定
@@ -160,28 +160,26 @@ onMounted(() => {
 
   // 绑定所有监听事件
   function creat_events() {
-    window.addEventListener('resize', () => {
-      resize()
-    })
+    window.addEventListener('resize', resize)
     // 当鼠标按下时，才可以移动所有图片
     canvas!.addEventListener('mousedown', () => {
       photobox.if_movable = true
     })
     // 当鼠标弹起时，图片无法被移动，并且调用check_img函数，获取当前鼠标所指向的图片
-    canvas!.addEventListener('mouseup', (e) => {
+    window.onmouseup = (e) => {
       photobox.if_movable = false
       check_img(e.x, e.y)
-    })
+    }
     // 当鼠标离开选区时，图片无法被移动，
-    canvas!.addEventListener('mouseleave', () => {
+    window.onmouseleave = () => {
       photobox.if_movable = false
-    })
+    }
     // 当鼠标移动时，调用move_imgs函数，移动所有图片
-    canvas!.addEventListener('mousemove', (e) => {
+    window.onmousemove = (e) => {
       // if_movable为flase则不可以移动图片，即鼠标未按下时
       if (!photobox.if_movable) return 0
       move_imgs(e.movementX, e.movementY)
-    })
+    }
   }
 
   // 移动所有图片
@@ -224,8 +222,16 @@ onMounted(() => {
   // 初始化
   init()
 
-  xTo = gsap.quickTo(mouse.value, 'x', { duration: DURATION.base })
-  yTo = gsap.quickTo(mouse.value, 'y', { duration: DURATION.base })
+  gsap.set(canvas, {
+    scale: 1.1,
+  })
+
+  gsap.set(mouse.value, {
+    scale: 0,
+  })
+
+  xTo = gsap.quickTo(mouse.value, 'x', { duration: DURATION.fast })
+  yTo = gsap.quickTo(mouse.value, 'y', { duration: DURATION.fast })
 
   const left = gsap.to(leftOuter.value, {
     left: 0,
@@ -240,6 +246,16 @@ onMounted(() => {
     bottom: 0,
   })
 
+  const mouseIn = gsap.to(mouse.value, {
+    scale: 1,
+  })
+  mouseIn.pause()
+
+  const canvasScale = gsap.to(canvas, {
+    scale: 1,
+  })
+  canvasScale.pause()
+
   left.pause()
   top.pause()
   right.pause()
@@ -250,6 +266,8 @@ onMounted(() => {
     top.play(0)
     right.play(0)
     bottom.play(0)
+    mouseIn.play(0)
+    canvasScale.play(0)
   }
 
   outStage = () => {
@@ -257,9 +275,11 @@ onMounted(() => {
     top.reverse()
     right.reverse()
     bottom.reverse()
+    mouseIn.reverse()
+    canvasScale.reverse()
   }
 
-  window.addEventListener('mousedown', inStage)
+  canvas.addEventListener('mousedown', inStage)
   window.addEventListener('mouseup', outStage)
   window.addEventListener('mousemove', moveMouse)
 })
@@ -267,6 +287,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('mousedown', inStage)
   window.removeEventListener('mmouseup', outStage)
+  window.removeEventListener('mousemove', moveMouse)
+  window.onmouseup = null
+  window.onmousemove = null
+  window.onmouseleave = null
 })
 </script>
 
@@ -280,11 +304,13 @@ onUnmounted(() => {
     </div>
 
     <div
-      class="bg-(--green) w-25 h-25 rounded-full absolute left-0 top-0 -translate-1/2 z-10 flex flex-col justify-between px-3 pointer-events-none"
+      class="bg-(--green) w-25 h-25 rounded-full absolute left-0 top-0 -translate-1/2 z-10 flex flex-col justify-between pointer-events-none"
       ref="mouse"
     >
-      <div class="w-1/2 h-1/2 rotate-225 self-start"><ArrowRight color="#171717" /></div>
-      <div class="w-1/2 h-1/2 rotate-45 self-end"><ArrowRight color="#171717" /></div>
+      <div class="w-1/2 h-1/2 rotate-225 self-start translate-2">
+        <ArrowRight color="#171717" />
+      </div>
+      <div class="w-1/2 h-1/2 rotate-45 self-end -translate-2"><ArrowRight color="#171717" /></div>
     </div>
 
     <div

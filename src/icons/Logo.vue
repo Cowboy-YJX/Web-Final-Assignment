@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineComponent({ name: 'LogoIcon' })
 
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, ref, useId } from 'vue'
 
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
@@ -9,7 +9,12 @@ import { DURATION } from '@animation'
 import { iconSpin } from '@utils/aniamtion/iconHover'
 gsap.registerPlugin(ScrollToPlugin)
 
+defineProps<{
+  circle?: boolean
+}>()
+
 const container = ref<Element | null>(null)
+const id = `track${useId()}`
 
 onMounted(() => {
   const logo = document.querySelector('#pattern')
@@ -54,7 +59,8 @@ onMounted(() => {
       <path
         d="M-12 20 A30 30 45 1 1 52 20"
         class="stroke-(--front-color) stroke-2 change-color-slow"
-        id="track"
+        :id="id"
+        v-show="circle ?? true"
       ></path>
     </defs>
 
@@ -93,11 +99,9 @@ onMounted(() => {
       ></path>
     </g>
 
-    <circle cx="20" cy="20" r="32" stroke="gray"></circle>
-
     <g>
-      <use href="#track" class="rotate-30 origin-center"></use>
-      <use href="#track" class="rotate-210 origin-center"></use>
+      <use :href="`#${id}`" class="rotate-30 origin-center"></use>
+      <use :href="`#${id}`" class="rotate-210 origin-center"></use>
     </g>
   </svg>
 </template>

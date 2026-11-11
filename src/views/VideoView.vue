@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import VideoHero from '@components/videoComponents/VideoHero.vue'
+</script>
 
 <template>
-  <section></section>
+  <VideoHero />
 </template>
 
 <style scoped></style>

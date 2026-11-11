@@ -10,9 +10,9 @@ import { textEnterMask } from '@utils/aniamtion/enterText'
 import { iconShake } from '@utils/aniamtion/iconHover'
 gsap.registerPlugin(ScrollTrigger)
 
-import WeChat from '@assets/photos/WeChat.jpg'
-import QQ from '@assets/photos/QQ.jpg'
-import XiaoHongShu from '@assets/photos/XiaoHongShu.jpg'
+import WeChat from '@assets/photos/QR/WeChat.jpg'
+import QQ from '@assets/photos/QR/QQ.jpg'
+import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
 
 import Github from '@icons/Github.vue'
 import Bilibili from '@icons/Bilibili.vue'

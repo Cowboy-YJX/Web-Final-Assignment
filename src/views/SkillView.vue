@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import SkillHero from '@components/skillComponents/SkillHero.vue'
+</script>
 
 <template>
-  <section></section>
+  <SkillHero />
 </template>
 
 <style scoped></style>

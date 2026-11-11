@@ -43,7 +43,7 @@ watch(isOpen, () => {
   <nav class="w-screen px-[6vw] flex justify-between items-center fixed top-10 z-99">
     <div>
       <button class="w-11 h-11 cursor-pointer">
-        <Logo />
+        <Logo :circle="true" />
       </button>
     </div>
 

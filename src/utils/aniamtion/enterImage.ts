@@ -36,7 +36,7 @@ export function imageLeftEnter(ele: Element) {
     0,
   )
 
-  imageTl.paused(true)
+  imageTl.pause()
 
   return imageTl
 }

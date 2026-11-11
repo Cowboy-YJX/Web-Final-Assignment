@@ -1,8 +1,8 @@
 <script setup lang="ts" name="EmailForm">
 import rightImg from '@assets/svg/work.svg'
-import WeChat from '@assets/photos/WeChat.jpg'
-import QQ from '@assets/photos/QQ.jpg'
-import XiaoHongShu from '@assets/photos/XiaoHongShu.jpg'
+import WeChat from '@assets/photos/QR/WeChat.jpg'
+import QQ from '@assets/photos/QR/QQ.jpg'
+import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
 </script>
 
 <template>
