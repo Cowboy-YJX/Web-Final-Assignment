@@ -1,8 +1,73 @@
 <script setup lang="ts" name="EmailForm">
+import gsap from 'gsap'
+import { DURATION, EASE } from '@animation'
+
 import rightImg from '@assets/svg/work.svg'
 import WeChat from '@assets/photos/QR/WeChat.jpg'
 import QQ from '@assets/photos/QR/QQ.jpg'
 import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
+
+import { onMounted } from 'vue'
+
+let send: (() => void) | null = null
+
+onMounted(() => {
+  send = () => {
+    const nameInput = document.querySelector<HTMLInputElement>('#username')
+    const emailInput = document.querySelector<HTMLInputElement>('#userEmail')
+    const needInput = document.querySelector<HTMLInputElement>('#userNeed')
+
+    const name = nameInput?.value
+    const email = emailInput?.value
+    const need = needInput?.value
+
+    if (!name || !email || !need) {
+      nameInput!.value = ''
+      emailInput!.value = ''
+      needInput!.value = ''
+
+      gsap.to([nameInput, emailInput, needInput], {
+        keyframes: {
+          rotate: [0, -5, 0, 5, 0],
+        },
+        transformOrigin: 'center center',
+        duration: DURATION.base,
+        ease: EASE.breathe,
+      })
+
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('email', email)
+    formData.append('need', need)
+
+    fetch('https://quickform.cn/api/9s1pujmolr', {
+      method: 'POST',
+      body: formData,
+    })
+      .then((res) => res.json)
+      .then((data) => console.log(data))
+      .catch((err) => console.log(err))
+
+    const successTl = gsap.timeline()
+    successTl.to([nameInput, emailInput, needInput], {
+      xPercent: 125,
+      onComplete: () => {
+        nameInput!.value = ''
+        emailInput!.value = ''
+        needInput!.value = ''
+      },
+    })
+    successTl.set([nameInput, emailInput, needInput], {
+      xPercent: -125,
+    })
+    successTl.to([nameInput, emailInput, needInput], {
+      xPercent: 0,
+    })
+  }
+})
 </script>
 
 <template>
@@ -12,7 +77,7 @@ import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
       style="border-radius: 100px"
     >
       <div
-        class="h-full w-[50%] font-OutFit text-(--black) flex flex-col justify-center py-[10vh] pl-[6vw]"
+        class="h-full w-[50%] font-OutFit text-(--black) flex flex-col justify-center py-[10vh] pl-[6vw] overflow-hidden"
       >
         <div class="text-[4.2rem] mb-[8vh] leading-12">
           GET IN TOUCH :]<br />
@@ -24,6 +89,7 @@ import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
           <input
             type="text"
             class="form-input rounded-full mt-2 px-5 bg-(--white) h-[6vh] w-[32vw]"
+            id="username"
           />
         </div>
 
@@ -32,6 +98,7 @@ import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
           <input
             type="text"
             class="form-input rounded-full mt-2 px-5 bg-(--white) h-[6vh] w-[32vw]"
+            id="userEmail"
           />
         </div>
 
@@ -40,6 +107,7 @@ import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
           <input
             type="text"
             class="form-input rounded-full mt-2 px-5 bg-(--white) h-[6vh] w-[32vw]"
+            id="userNeed"
           />
         </div>
 
@@ -60,6 +128,7 @@ import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
           <div
             type="submit"
             class="submit-btn w-25 h-12 rounded-full bg-transparent relative self-center"
+            v-on:click="send()"
           ></div>
         </div>
       </div>

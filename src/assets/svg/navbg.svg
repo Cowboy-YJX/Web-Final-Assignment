@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246 560" width="100%" height="100%">
+  <path
+    d="M3 560 L3 190 L50 230 L190 230 L243 190 L243 560 L3 560
+      M50 230 L50 560 M190 230 L190 560z"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke="#171717"
+    fill="#e0e0e0"
+  />
+
+  <path
+    d="M3 190 L55 150 L185 150 L243 190 L190 230 L50 230 L3 190"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke="#171717"
+    fill="#f7f7f7"
+  />
+
+  <path
+    d="M90 300  L150 300 L150 400 L90 400 L90 300"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke="#171717"
+    fill="#17f700"
+  />
+
+  <path
+    d="M90 450  L150 450 L150 550 L90 550 L90 450"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke="#171717"
+    fill="#17f700"
+  />
+
+  <path
+    d="M14 370  L39 390 L39 450 L14 430 L14 370"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke="#171717"
+    fill="#f7f7f7"
+  />
+</svg>

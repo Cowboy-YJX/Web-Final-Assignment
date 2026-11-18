@@ -8,33 +8,75 @@ import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import navbg from '@assets/svg/navbg.svg'
+
 const { toggleEnum } = useGloballAnimationStore()
 const { isOpen } = storeToRefs(useGloballAnimationStore())
 
 const container = ref<Element | null>(null)
 let app: Element | null = null
 
+let currentIndex: number
+let changeHref: () => void
+
 const link = [
-  { chName: '首 X 页', engName: 'HOME', path: '/' },
-  { chName: '图 X 片', engName: 'PHOTO', path: '/photo' },
-  { chName: '视 X 频', engName: 'VIDEO', path: '/video' },
-  { chName: '音 X 乐', engName: 'MUSIC', path: '/music' },
-  { chName: '技 X 能', engName: 'SKILL', path: '/skill' },
+  { chName: '首 X 页', engName: 'HOME', path: '/', index: 0 },
+  { chName: '图 X 片', engName: 'PHOTO', path: '/photo', index: 1 },
+  { chName: '视 X 频', engName: 'VIDEO', path: '/video', index: 2 },
+  { chName: '音 X 乐', engName: 'MUSIC', path: '/music', index: 3 },
+  { chName: '技 X 能', engName: 'SKILL', path: '/skill', index: 4 },
 ]
 
-let openEnum: GSAPAnimation | null = null
+let openEnum: GSAPTimeline | null = null
 
 onMounted(() => {
   app = document.querySelector('#app')
 
-  if (!app) return
+  const house = document.querySelectorAll('.nav-house')
+  const navBtn = document.querySelectorAll<HTMLElement>('.nav-btn')
 
-  openEnum = gsap.to(container.value, {
+  if (!app) return
+  if (!house) return
+  if (!navBtn) return
+
+  gsap.set(house, {
+    yPercent: 100,
+  })
+
+  changeHref = () => {
+    const currentHref = window.location.href.substring(
+      'http://'.length + window.location.host.length,
+    )
+    for (const item of link) {
+      navBtn[item.index]?.classList.remove('active')
+      if (item.path == currentHref) {
+        currentIndex = item.index
+      }
+    }
+    if ('/email' == currentHref) {
+      currentIndex = -1
+    }
+    navBtn[currentIndex]?.classList.add('active')
+  }
+
+  openEnum = gsap.timeline()
+  openEnum.to(container.value, {
     borderRadius: 0,
     yPercent: -100,
     ease: EASE.outSoft,
     duration: DURATION.scene,
   })
+  openEnum.to(
+    house,
+    {
+      stagger: {
+        from: 'end',
+        amount: DURATION.base,
+      },
+      yPercent: 0,
+    },
+    '0.3',
+  )
   openEnum.paused(true)
 })
 
@@ -48,6 +90,8 @@ watch(isOpen, () => {
     openEnum?.timeScale(1.25)
     openEnum?.reverse()
   }
+
+  changeHref()
 })
 </script>
 
@@ -56,7 +100,7 @@ watch(isOpen, () => {
     class="fixed bottom-0 z-50 translate-y-1/1 overflow-hidden rounded-l-[120px] rounded-r-[120px]"
     ref="container"
   >
-    <div class="relative h-screen w-screen pl-[26vw] pt-[8vh] nav-panel">
+    <div class="relative h-screen w-screen pl-[25vw] pt-[8vh] nav-panel">
       <RouterLink
         :to="item.path"
         class="text-[6.2em] font-black text-(--black) leading-[13vh] flex items-center nav-btn"
@@ -72,7 +116,22 @@ watch(isOpen, () => {
         </div>
       </RouterLink>
 
-      <div></div>
+      <div class="mt-15 text-(--black)">
+        <div class="font-OutFit">GET IN TOUCH \\\</div>
+        <div class="font-ThinFit text-[1.5rem]">
+          <span class="text-(--green)">Email: </span>Cowboy@qq.com
+        </div>
+        <div class="font-ThinFit text-[1.5rem]">
+          <span class="text-(--green)">WeChat: </span>Cowboy
+        </div>
+      </div>
+
+      <img :src="navbg" alt="" class="w-[26vw] absolute bottom-1/5 right-[10vw] nav-house" />
+      <img :src="navbg" alt="" class="w-[26vw] absolute bottom-0 right-[-10vw] nav-house" />
+      <img :src="navbg" alt="" class="w-[26vw] absolute -bottom-10 right-[20vw] nav-house" />
+      <img :src="navbg" alt="" class="w-[26vw] absolute -bottom-1/4 right-0 nav-house" />
+
+      <div class="font-OutFit text-(--black)"></div>
     </div>
   </section>
 </template>

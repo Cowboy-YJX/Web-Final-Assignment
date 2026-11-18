@@ -1,12 +1,13 @@
 <script setup lang="ts" name="TransitionSection">
 import gsap from 'gsap'
 import { Physics2DPlugin } from 'gsap/Physics2DPlugin'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { DURATION, EASE } from '@/animation'
-gsap.registerPlugin(Physics2DPlugin)
+gsap.registerPlugin(Physics2DPlugin, ScrollTrigger)
 
 import { onMounted, onUnmounted, ref } from 'vue'
 
-import house from '@assets/svg/house.svg'
+import horseSrc from '@assets/svg/horse.svg'
 import one from '@assets/svg/chess.svg'
 import two from '@assets/svg/clover.svg'
 import three from '@assets/svg/fan.svg'
@@ -20,9 +21,11 @@ import ten from '@assets/svg/vuejs.svg'
 
 const iconsSrc = [one, two, three, four, five, six, seven, eight, nine, ten]
 
-const container = ref<Element | null>(null)
+const fireContainer = ref<Element | null>(null)
 const eyeContainer = ref<Element | null>(null)
 const fire = ref<Element | null>(null)
+const horse = ref<Element | null>(null)
+const eyeBack = ref<Element | null>(null)
 
 let xTo: ((val: number) => void) | null = null
 let yTo: ((val: number) => void) | null = null
@@ -54,9 +57,11 @@ onMounted(() => {
   const eye = document.querySelectorAll('.eye-center')
   const icons = document.querySelectorAll('.icon')
 
-  if (!container.value) return
+  if (!fireContainer.value) return
   if (!eyeContainer.value) return
   if (!fire.value) return
+  if (!horse.value) return
+  if (!eyeBack.value) return
   if (!icons) return
   if (!eye) return
 
@@ -68,16 +73,38 @@ onMounted(() => {
   eyeContainer.value.addEventListener('mousemove', moveEye)
   eyeContainer.value.addEventListener('mouseleave', leaveEye)
 
-  const ROTATE_ANGLE = 20
+  gsap.to(horse.value, {
+    scrollTrigger: {
+      trigger: fireContainer.value,
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true,
+    },
+    yPercent: 50,
+    ease: EASE.linear,
+  })
+
+  gsap.from(eyeBack.value, {
+    scrollTrigger: {
+      trigger: fireContainer.value,
+      start: 'bottom bottom',
+      scrub: true,
+    },
+    width: '80vw',
+    height: '120vh',
+  })
+
+  const initAngle = -30
+  const ROTATE_ANGLE = initAngle * 0.5
   const REPEAT = 3
-  gsap.set(fire.value, { rotate: -ROTATE_ANGLE })
+  gsap.set(fire.value, { rotate: initAngle })
 
   const fireTl = gsap.timeline()
   fireTl.to(
     fire.value,
     {
       keyframes: {
-        rotate: [-ROTATE_ANGLE, -3 * ROTATE_ANGLE],
+        rotate: [initAngle, initAngle + ROTATE_ANGLE, initAngle - ROTATE_ANGLE],
       },
       repeat: REPEAT,
       yoyo: true,
@@ -104,19 +131,22 @@ onMounted(() => {
         velocity: 'random(800, 1200)',
         angle: 'random(200, 250)',
         gravity: 400,
-        acceleration: 45,
-        accelerationAngle: 45,
+        acceleration: initAngle,
+        accelerationAngle: initAngle,
       },
       duration: REPEAT * DURATION.scene,
       stagger: {
         amount: REPEAT * DURATION.scene,
+      },
+      onComplete: () => {
+        gsap.to(icons, { opacity: 0 })
       },
     },
     DURATION.base,
   )
   fireTl.pause()
 
-  container.value.addEventListener('click', () => {
+  fireContainer.value.addEventListener('click', () => {
     fireTl.play(0)
   })
 })
@@ -128,19 +158,28 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="bg-(--green) relative" ref="container">
-    <div class="bg-(--black) relative overflow-hidden" style="border-radius: 0 0 20% 20%">
+  <section class="bg-(--green) relative">
+    <div
+      class="bg-(--black) relative overflow-hidden z-10"
+      style="border-radius: 0 0 20% 20%"
+      ref="fireContainer"
+    >
       <div
-        class="w-screen h-[95vh] font-OutFit flex flex-col items-center justify-center relative z-10"
+        class="w-screen h-[95vh] font-OutFit flex flex-col items-center justify-center relative z-10 text-center"
       >
-        <div class="text-[4rem]">FULL OF CREATIVITY</div>
-        <div class="text-[8rem]">ABLE TO <span class="text-(--green)">IMANGINE</span></div>
-        <div class="text-[6rem]"><span class="stroke-text">READY </span>TO CREATE</div>
+        <div class="text-[7vh]">FULL OF CREATIVITY</div>
+        <div class="text-[14vh]">ABLE TO <span class="text-(--green)">IMANGINE</span></div>
+        <div class="text-[10vh]"><span class="stroke-text">READY </span>TO CREATE</div>
       </div>
 
-      <img :src="house" alt="" class="absolute top-[10vh] left-[8vw] w-55 -rotate-25" />
+      <img
+        :src="horseSrc"
+        alt=""
+        class="absolute top-[5vh] left-[8vw] w-55 -rotate-25"
+        ref="horse"
+      />
 
-      <div class="icon-fire w-25 absolute bottom-[8vh] right-[5vw] z-10" ref="fire">
+      <div class="icon-fire w-25 absolute bottom-[8vh] right-[6vw] z-10" ref="fire">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="w-full h-full">
           <defs>
             <linearGradient id="pink-purple">
@@ -163,7 +202,7 @@ onUnmounted(() => {
       <img
         v-for="(item, index) in iconsSrc"
         :key="index"
-        class="icon absolute bottom-[8.8vh] right-[6vw] opacity-0"
+        class="icon absolute bottom-[8.5vh] right-[7vw] opacity-0"
         width="55"
         height="55"
         :src="item"
@@ -172,7 +211,7 @@ onUnmounted(() => {
       <img
         v-for="(item, index) in iconsSrc"
         :key="index"
-        class="icon absolute bottom-[8.8vh] right-[6vw] opacity-0"
+        class="icon absolute bottom-[8.5vh] right-[7vw] opacity-0"
         width="55"
         height="55"
         :src="item"
@@ -182,41 +221,53 @@ onUnmounted(() => {
 
     <div class="w-screen h-[95vh] bg-(--green) relative">
       <div
-        class="font-OutFit text-(--black) text-[10rem] leading-58 text-nowrap"
+        class="font-OutFit text-(--black) text-[20vh] leading-[24vh] text-nowrap"
         v-for="n in 4"
         :key="n"
         :index="n"
       >
         VISUAL <span class="stroke-black">FIRST</span> VISUAL
         <span class="stroke-black">FIRST</span> VISUAL
-        <span class="stroke-black">FIRST</span>
       </div>
 
       <div
         class="absolute left-1/2 top-1/2 -translate-1/2 w-[70vh] h-[70vh] rounded-4xl bg-(--black)"
+        ref="eyeBack"
       >
-        <div class="w-full h-full relative" ref="eyeContainer">
+        <div class="w-full h-full relative flex justify-center items-center" ref="eyeContainer">
+          <div class="absolute w-[40vh] h-[40vh] rounded-full bg-(--white)"></div>
+          <div class="absolute w-[22vh] h-[22vh] rounded-full bg-blue-500 eye-center"></div>
           <div
-            class="absolute left-1/2 top-1/2 -translate-1/2 w-[40vh] h-[40vh] rounded-full bg-(--white)"
-          ></div>
-          <div
-            class="absolute left-[24vh] top-[24vh] w-[22vh] h-[22vh] rounded-full bg-blue-500 eye-center"
-          ></div>
-          <div
-            class="absolute left-1/2 top-1/2 -translate-1/2 w-[10vh] h-[10vh] rounded-full bg-amber-950 eye-center inner-eye"
+            class="absolute w-[10vh] h-[10vh] rounded-full bg-amber-950 eye-center inner-eye"
           ></div>
 
           <div class="absolute font-ThinFit text-(--green) text-[2rem] left-[2vh] top-[2vh]">
             视
+            <div class="gradient-brand-horizon h-1 w-8 absolute top-[2.5vh] left-[4vh]"></div>
+            <div class="gradient-brand-vertical h-8 w-1 absolute top-[5vh] left-[1.5vh]"></div>
           </div>
           <div class="absolute font-ThinFit text-(--green) text-[2rem] right-[2vh] top-[2vh]">
             觉
+            <div
+              class="gradient-brand-horizon h-1 w-8 absolute top-[2.5vh] right-[4vh] -scale-x-100"
+            ></div>
+            <div class="gradient-brand-vertical h-8 w-1 absolute top-[5vh] left-[1.5vh]"></div>
           </div>
           <div class="absolute font-ThinFit text-(--green) text-[2rem] right-[2vh] bottom-[2vh]">
             优
+            <div
+              class="gradient-brand-horizon h-1 w-8 absolute top-[2.5vh] right-[4vh] -scale-x-100"
+            ></div>
+            <div
+              class="gradient-brand-vertical h-8 w-1 absolute bottom-[5vh] left-[1.5vh] -scale-y-100"
+            ></div>
           </div>
           <div class="absolute font-ThinFit text-(--green) text-[2rem] left-[2vh] bottom-[2vh]">
             先
+            <div class="gradient-brand-horizon h-1 w-8 absolute top-[2.5vh] left-[4vh]"></div>
+            <div
+              class="gradient-brand-vertical h-8 w-1 absolute bottom-[5vh] left-[1.5vh] -scale-y-100"
+            ></div>
           </div>
         </div>
       </div>
@@ -235,26 +286,34 @@ onUnmounted(() => {
   -webkit-text-stroke: 4px var(--black);
 }
 
+.gradient-brand-horizon {
+  background: linear-gradient(in oklch to right, var(--white) 25%, transparent 100%);
+}
+
+.gradient-brand-vertical {
+  background: linear-gradient(in oklch to bottom, var(--white) 25%, transparent 100%);
+}
+
 .inner-eye {
   box-shadow: 0 0 2px 5px #461951;
 }
 
 [index='1'],
 [index='3'] {
-  animation: houseLamp 2s infinite var(--motion-ease-linear) !important;
+  animation: textLoop 2s infinite var(--motion-ease-linear) !important;
 }
 
 [index='2'],
 [index='4'] {
-  animation: houseLamp 2s infinite reverse var(--motion-ease-linear) !important;
+  animation: textLoop 2s infinite reverse var(--motion-ease-linear) !important;
 }
 
-@keyframes houseLamp {
+@keyframes textLoop {
   from {
-    transform: translateX(-67%);
+    transform: translateX(-137vh);
   }
   to {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
 }
 </style>

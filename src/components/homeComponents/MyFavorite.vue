@@ -6,6 +6,7 @@ import { DURATION, EASE } from '@animation'
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 import { imageLeftEnter } from '@utils/aniamtion/enterImage'
+import { textEnterMask } from '@utils/aniamtion/enterText'
 
 import Logo from '@icons/Logo.vue'
 
@@ -22,6 +23,9 @@ const image = ref<Element | null>(null)
 const topTitle = ref<Element | null>(null)
 const bottomTitle = ref<Element | null>(null)
 const textPath = ref<SVGPathElement | null>(null)
+const blessing = ref<Element | null>(null)
+const thanks = ref<Element | null>(null)
+const infinite = ref<Element | null>(null)
 
 const textLength: { length: number; offset: number } = { length: 0, offset: 0 }
 const tagItems = ['MUSIC', 'ANIMES', 'GAMES', 'COMICS', 'MOVIE']
@@ -40,6 +44,9 @@ onMounted(() => {
   if (!topTitle.value) return
   if (!bottomTitle.value) return
   if (!textPath.value) return
+  if (!blessing.value) return
+  if (!thanks.value) return
+  if (!infinite.value) return
   if (!tags) return
   if (!head) return
   if (!tail) return
@@ -75,8 +82,23 @@ onMounted(() => {
   })
 
   const tagText = SplitText.create(tags, { type: 'words' })
-
-  const tagIn = gsap.from(tags, {
+  gsap.from(one.value, {
+    scrollTrigger: {
+      trigger: one.value,
+      containerAnimation: horizon,
+      start: 'left left',
+    },
+    opacity: 0,
+    yPercent: 10,
+  })
+  const tagTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: one.value,
+      containerAnimation: horizon,
+      start: 'right 95%',
+    },
+  })
+  tagTl.from(tags, {
     scale: 0,
     ease: EASE.spring,
     duration: DURATION.slow,
@@ -84,29 +106,22 @@ onMounted(() => {
       each: DURATION.instant,
     },
   })
-  const tagTextIn = gsap.from(tagText.words, {
-    yPercent: 15,
-    opacity: 0,
-    delay: DURATION.base,
-    stagger: {
-      each: DURATION.instant,
+  tagTl.from(
+    tagText.words,
+    {
+      yPercent: 15,
+      opacity: 0,
+      stagger: {
+        each: DURATION.instant,
+      },
     },
-  })
-  tagTextIn.pause()
-  tagIn.pause()
-  gsap.to(one.value, {
-    scrollTrigger: {
-      trigger: one.value,
-      start: 'top 5%',
-    },
-    onStart: () => {
-      tagIn.play(0)
-      tagTextIn.play(0)
-    },
-  })
+    '<+0.1',
+  )
 
   const imageTl = imageLeftEnter(image.value)
-
+  const blessingTl = textEnterMask(blessing.value, 'lines', 'y', DURATION.instant)
+  blessingTl?.pause(0)
+  // 图片入场时机
   gsap.to(two.value, {
     scrollTrigger: {
       trigger: two.value,
@@ -115,6 +130,17 @@ onMounted(() => {
     },
     onStart: () => {
       imageTl.play(0)
+    },
+  })
+  // 祝福入场时机
+  gsap.to(two.value, {
+    scrollTrigger: {
+      trigger: two.value,
+      containerAnimation: horizon,
+      start: 'left left',
+    },
+    onStart: () => {
+      blessingTl?.play(0)
     },
   })
 
@@ -127,7 +153,6 @@ onMounted(() => {
     },
     left: '10vw',
   })
-
   gsap.to(bottomTitle.value, {
     scrollTrigger: {
       trigger: two.value,
@@ -136,6 +161,21 @@ onMounted(() => {
       containerAnimation: horizon,
     },
     left: '10vw',
+  })
+
+  const thanksTl = textEnterMask(thanks.value, 'lines', 'y', DURATION.fast)
+  thanksTl?.pause(0)
+  gsap.from(infinite.value, {
+    scrollTrigger: {
+      trigger: three.value,
+      containerAnimation: horizon,
+      start: 'left center',
+    },
+    opacity: 0,
+    yPercent: 10,
+    onStart: () => {
+      thanksTl?.play(0)
+    },
   })
 })
 </script>
@@ -184,21 +224,32 @@ onMounted(() => {
           <span class="text-(--green)">MUSIC</span>
         </div>
 
-        <div class="absolute left-[43vw] w-19/50 top-1/2 -translate-y-1/2 overflow-hidden">
-          <img :src="test" alt="" ref="image" />
+        <div class="absolute h-full py-[3vh] right-[19vw] top-1/2 -translate-y-1/2 overflow-hidden">
+          <img :src="test" alt="" ref="image" class="h-full rounded-2xl" />
+        </div>
+
+        <div class="absolute right-0 bottom-[3vh] w-[18vw] text-2xl" ref="blessing">
+          Hope you also have a good and happiness day!<br />
+          Let's find joy together.
         </div>
       </div>
 
       <div class="w-screen h-full relative text-center" ref="three">
         <div
           class="font-OutFit text-[6rem] absolute top-[12vh] left-1/2 -translate-x-1/2 leading-23"
+          ref="thanks"
         >
           <span class="text-(--green)">THANKS</span><br />
           FOR<br />
           YOUR <span class="thanks-visiting">VISITING</span>
         </div>
 
-        <svg class="block w-full absolute left-0 bottom-[-10vh]" viewBox="0 0 1200 520" role="img">
+        <svg
+          class="block w-full absolute left-0 bottom-[-10vh]"
+          viewBox="0 0 1200 520"
+          role="img"
+          ref="infinite"
+        >
           <path
             class="stroke-(--green)"
             fill="none"

@@ -27,8 +27,10 @@ import {
 import type { Object3D } from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 
+import grooveMap from '@assets/texture/groove/record.png'
+
 import gsap from 'gsap'
-import { EASE } from '@animation'
+import { DURATION, EASE } from '@animation'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
@@ -183,6 +185,8 @@ onMounted(() => {
   const holeGeometry = new CircleGeometry(holeRadius, 64)
   const hubGeometry = new RingGeometry(holeRadius, holeRadius + 0.55, 64, 1)
 
+  const textureLoader = new TextureLoader()
+
   const backMaterial = new MeshPhysicalMaterial({
     color: 0xd4dce7,
     metalness: 1,
@@ -223,8 +227,22 @@ onMounted(() => {
     fog: true,
   })
 
-  const textureLoader = new TextureLoader()
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
+
+  const grooveTexture = textureLoader.load(grooveMap)
+  grooveTexture.colorSpace = SRGBColorSpace
+  grooveTexture.anisotropy = maxAnisotropy
+
+  const grooveMaterial = new MeshBasicMaterial({
+    map: grooveTexture,
+    transparent: true,
+    opacity: 0.48,
+    depthWrite: false,
+    toneMapped: false,
+    side: FrontSide,
+    fog: true,
+  })
+
   const records: RecordItem[] = []
 
   for (const info of recordsInfo) {
@@ -249,6 +267,10 @@ onMounted(() => {
     const edge = new Mesh(edgeGeometry, edgeMaterial)
     edge.rotation.x = Math.PI / 2
 
+    const backGroove = new Mesh(discGeometry, grooveMaterial)
+    backGroove.position.z = -discThickness / 2 - 0.006
+    backGroove.rotation.y = Math.PI
+
     const frontHole = new Mesh(holeGeometry, holeMaterial)
     frontHole.position.z = discThickness / 2 + 0.012
 
@@ -263,7 +285,7 @@ onMounted(() => {
     backHub.rotation.y = Math.PI
 
     const spin = new Group()
-    spin.add(front, back, edge, frontHole, backHole, frontHub, backHub)
+    spin.add(front, back, edge, backGroove, frontHole, backHole, frontHub, backHub)
 
     const group = new Group()
     group.add(spin)
@@ -291,14 +313,16 @@ onMounted(() => {
       const distance = Math.abs(offset)
       const visible = distance <= maxVisibleOffset
       record.group.visible = visible
-      if (!visible) return
+      if (!visible) {
+        record.group.position.set(0, 0, 5)
+      }
 
       const sign = Math.sign(offset)
       const shade = distance === 0 ? 1 : 0.45
       const target = {
-        x: sign * (12.25 + (distance - 1) * 6.5) * spread,
+        x: sign * (12.25 + (distance - 1) * 8.5) * spread,
         y: -distance * 1.5,
-        z: -distance * 6,
+        z: -distance * 10,
         scale: 1 - distance * 0.17,
         rotationY: -sign * (0.18 + (distance - 1) * 0.12),
       }
@@ -316,7 +340,7 @@ onMounted(() => {
         x: target.x,
         y: target.y,
         z: target.z,
-        duration: 0.85,
+        duration: DURATION.scene,
         ease: EASE.outSoft,
         overwrite: 'auto',
       })
@@ -530,6 +554,8 @@ onMounted(() => {
     holeGeometry.dispose()
     hubGeometry.dispose()
     backMaterial.dispose()
+    grooveMaterial.dispose()
+    grooveTexture.dispose()
     edgeMaterial.dispose()
     hubMaterial.dispose()
     holeMaterial.dispose()

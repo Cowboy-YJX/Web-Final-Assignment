@@ -3,8 +3,10 @@ import gsap from 'gsap'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin'
+import { Draggable } from 'gsap/Draggable'
+import { InertiaPlugin } from 'gsap/InertiaPlugin'
 import { DURATION, EASE } from '@animation'
-gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, MorphSVGPlugin)
+gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, MorphSVGPlugin, Draggable, InertiaPlugin)
 
 import {
   Scene,
@@ -12,7 +14,6 @@ import {
   Mesh,
   WebGLRenderer,
   PerspectiveCamera,
-  Color,
   Timer,
   MeshMatcapMaterial,
 } from 'three'
@@ -28,6 +29,9 @@ const container = ref<Element | null>(null)
 const horizon = ref<Element | null>(null)
 const vertical = ref<Element | null>(null)
 const pattern = ref<Element | null>(null)
+const skillOne = ref<Element | null>(null)
+const skillTwo = ref<Element | null>(null)
+const skillThree = ref<Element | null>(null)
 
 let disposeScene: (() => void) | null = null
 
@@ -41,9 +45,11 @@ onMounted(() => {
   if (!vertical.value) return
   if (!container.value) return
   if (!pattern.value) return
+  if (!skillOne.value) return
+  if (!skillTwo.value) return
+  if (!skillThree.value) return
 
   const scene = new Scene()
-  scene.background = new Color('#171717')
 
   const geometry = new TorusKnotGeometry(10, 2, 256, 16, 3, 5)
   const material = new MeshMatcapMaterial({ color: '#17f700' })
@@ -51,10 +57,10 @@ onMounted(() => {
   scene.add(mesh)
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 100)
-  camera.position.set(0, 0, 40)
+  camera.position.set(0, 0, 30)
   camera.lookAt(0, 0, 0)
 
-  const renderer = new WebGLRenderer({ canvas, antialias: true })
+  const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
   const control = new OrbitControls(camera, canvas)
@@ -62,7 +68,7 @@ onMounted(() => {
   control.update()
 
   function resize() {
-    const width = window.innerWidth / 3
+    const width = window.innerWidth / 4
     const height = width
 
     renderer.setSize(width, height)
@@ -76,8 +82,8 @@ onMounted(() => {
   function render() {
     const timeObject = clock.update()
     const delta = timeObject.getDelta()
-    mesh.rotation.x += 1 * delta
-    mesh.rotation.y += 0.5 * delta
+    mesh.rotation.x += 0.5 * delta
+    mesh.rotation.y += 0.52 * delta
 
     control.update()
     renderer.render(scene, camera)
@@ -91,7 +97,7 @@ onMounted(() => {
     gsap.from(horizon.value!, {
       scrollTrigger: {
         trigger: container.value,
-        start: 'top 85%',
+        start: 'top 65%',
       },
       duration: DURATION.slow,
       ease: EASE.out,
@@ -102,7 +108,7 @@ onMounted(() => {
       scrollTrigger: {
         trigger: container.value,
         start: 'top 55%',
-        end: 'bottom +=50',
+        end: 'bottom 70%',
         scrub: true,
         once: true,
       },
@@ -110,6 +116,45 @@ onMounted(() => {
       ease: EASE.linear,
     })
   }, container.value)
+
+  gsap.from(skillOne.value, {
+    scrollTrigger: {
+      trigger: container.value,
+      start: 'top top',
+    },
+    yPercent: 20,
+    opacity: 0,
+  })
+
+  gsap.from(skillTwo.value, {
+    scrollTrigger: {
+      trigger: container.value,
+      start: 'center center',
+    },
+    yPercent: 20,
+    opacity: 0,
+  })
+
+  gsap.from(skillThree.value, {
+    scrollTrigger: {
+      trigger: container.value,
+      start: 'bottom bottom',
+    },
+    yPercent: 20,
+    opacity: 0,
+  })
+
+  Draggable.create(pattern.value, {
+    bounds: '.pattern-outer',
+    type: 'x,y',
+    inertia: true,
+    onDragEnd: () => {
+      gsap.to(pattern.value, {
+        x: 0,
+        y: 0,
+      })
+    },
+  })
 
   const patternTransform = gsap.to(pattern.value, {
     morphSVG:
@@ -146,7 +191,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="relative min-h-[200vh] pt-[6vh]" ref="container">
+  <section class="relative min-h-[205vh] pt-[6vh]" ref="container">
     <div class="font-OutFit text-[4rem] text-center" ref="ask">
       WHAT <span class="text-(--green)">SKILLS</span> DO I HAVE
     </div>
@@ -156,7 +201,7 @@ onBeforeUnmount(() => {
       ?
     </div>
 
-    <svg class="w-screen absolute top-0 left-0" viewBox="0 0 1000 1150">
+    <svg class="w-screen absolute top-0 left-0" viewBox="0 0 1000 1200">
       <path
         d="M120 1 L886 1"
         fill="none"
@@ -167,7 +212,7 @@ onBeforeUnmount(() => {
         ref="horizon"
       ></path>
       <path
-        d="M499 130 L499 1149"
+        d="M499 130 L499 1199"
         fill="none"
         stroke-width="2"
         stroke-linecap="round"
@@ -177,13 +222,16 @@ onBeforeUnmount(() => {
       ></path>
     </svg>
 
-    <div class="absolute left-[12vw] top-[25vh] font-OutFit text-[1.5rem]">
+    <div
+      class="w-[50vw] absolute left-0 top-[25vh] font-OutFit text-[1.5rem] flex flex-col items-center"
+      ref="skillOne"
+    >
       I'M A<br />
       <span class="text-(--green) text-[2rem]">GRAPHIC DESGINER</span><br />
       <span class="about-order">0 1</span><br />
-      <div class="font-ThinOut text-center relative top-[10vh]">会做一些奇奇怪怪的动画</div>
+      <div class="font-ThinOut relative top-[8vh]">爱做一些奇奇怪怪的设计</div>
 
-      <svg viewBox="0 0 550 799.7" class="w-[18vw] overflow-visible relative top-[20vh]">
+      <svg viewBox="0 0 550 799.7" class="w-[18vw] overflow-visible relative top-[15vh]">
         <image width="550" height="799.7" :href="venusBody" />
         <g class="venus_forearm">
           <image width="550" height="799.7" :href="venusForearm" />
@@ -194,23 +242,32 @@ onBeforeUnmount(() => {
       </svg>
     </div>
 
-    <div class="absolute right-[12vw] top-[75vh] font-OutFit text-[1.5rem]">
+    <div
+      class="w-[50vw] absolute right-0 top-[80vh] font-OutFit text-[1.5rem] flex flex-col items-center"
+      ref="skillTwo"
+    >
       I'M A<br />
       <span class="text-(--green) text-[2rem]">THREED EDITOR</span><br />
       <span class="about-order">0 2</span><br />
-      <div class="text-center font-ThinFit relative top-[8vh]">会做奇形怪状的建模</div>
+      <div class="font-ThinFit relative top-[8vh]">爱做一些奇形怪状的建模</div>
 
       <canvas id="about-two" class="block relative top-[15vh]"></canvas>
     </div>
 
-    <div class="absolute left-[12vw] top-[125vh] font-OutFit text-[1.5rem]">
+    <div
+      class="w-[50vw] absolute left-0 top-[135vh] font-OutFit text-[1.5rem] flex flex-col items-center"
+      ref="skillThree"
+    >
       I'M A<br />
       <span class="text-(--green) text-[2rem]">UX DESGINER</span><br />
       <span class="about-order">0 3</span><br />
-      <div class="text-center font-ThinFit relative top-[8vh]">会做不拘一格的交互</div>
+      <div class="font-ThinFit relative top-[8vh]">爱做一些不拘一格的交互</div>
 
-      <div class="pattern-outer relative top-[15vh]">
-        <svg viewBox="0 0 640 640" class="w-[18vw]">
+      <div class="pattern-outer relative top-[10vh] w-[35vw] h-[25vw] overflow-visible">
+        <svg
+          viewBox="0 0 640 640"
+          class="w-[20vw] overflow-visible absolute left-1/2 top-1/2 -translate-1/2"
+        >
           <path
             ref="pattern"
             class="fill-(--green)"

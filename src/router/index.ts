@@ -41,9 +41,6 @@ const router = createRouter({
       component: MusicView,
     },
   ],
-  scrollBehavior() {
-    return { top: 0 }
-  },
 })
 
 export default router

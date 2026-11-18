@@ -14,8 +14,8 @@ import imgSeven from '@assets/photos/seven.jpg'
 import imgEight from '@assets/photos/eight.jpg'
 import imgNine from '@assets/photos/nine.jpg'
 import imgTen from '@assets/photos/ten.jpg'
-
-import ArrowRight from '@icons/ArrowRight.vue'
+import imgEleven from '@assets/photos/eleven.jpg'
+import imgTwelve from '@assets/photos/twelve.jpg'
 
 type imgAttrib = {
   img: HTMLImageElement
@@ -34,6 +34,8 @@ const imgs: string[] = [
   imgEight,
   imgNine,
   imgTen,
+  imgEleven,
+  imgTwelve,
   imgOne,
   imgTwo,
   imgThree,
@@ -44,6 +46,8 @@ const imgs: string[] = [
   imgEight,
   imgNine,
   imgTen,
+  imgEleven,
+  imgTwelve,
 ]
 
 const photobox: {
@@ -55,20 +59,23 @@ const photobox: {
   img_margin: number
   total_width: number
   total_height: number
+  img_radius: number
   img_data: imgAttrib[]
   if_movable: boolean
 } = {
   // 图片的总数
-  img_total: 20,
+  img_total: 24,
   // 图片排列的总列数
-  row_max: 5,
+  row_max: 6,
   // 图片排列的总行数
   line_max: 4,
   // 源图片的实际宽高的一半
   img_width: Math.floor(585 / 2),
   img_height: Math.floor(780 / 2),
+  // 图片圆角大小
+  img_radius: 16,
   // 图片间的上下左右间距
-  img_margin: 180,
+  img_margin: 150,
   // 所有图片纵横排列之后的总宽高，用作图片超出范围的界限判定
   total_width: 0,
   total_height: 0,
@@ -84,12 +91,17 @@ const rightOuter = ref<Element | null>(null)
 const bottomOuter = ref<Element | null>(null)
 const mask = ref<Element | null>(null)
 const mouse = ref<Element | null>(null)
+const container = ref<Element | null>(null)
+const icon = ref<Element | null>(null)
+
+const displayImg = ref<boolean>(false)
 
 let inStage: () => void
 let outStage: () => void
 
 let xTo: (val: number) => void
 let yTo: (val: number) => void
+let mouseRotate: (e: Event) => void
 
 function moveMouse(e: Event) {
   const x = (e as MouseEvent).clientX
@@ -101,7 +113,7 @@ function moveMouse(e: Event) {
 
 onMounted(() => {
   const canvas = document.querySelector<HTMLCanvasElement>('#photo-canvas')
-  const currentImg = document.querySelector('#currentImg')
+  const currentImg = document.querySelector<HTMLImageElement>('#currentImg')
 
   if (!canvas) return
   if (!currentImg) return
@@ -111,10 +123,16 @@ onMounted(() => {
   if (!bottomOuter.value) return
   if (!mask.value) return
   if (!mouse.value) return
+  if (!container.value) return
+  if (!icon.value) return
 
   const content = canvas.getContext('2d')
 
   if (!content) return
+
+  let mouseX = window.innerWidth / 2
+  let mouseY = window.innerHeight / 2
+  let oldDegree = 0
 
   // 初始化
   function init() {
@@ -126,6 +144,37 @@ onMounted(() => {
     resize()
     creat_events()
     creat_img_data()
+  }
+
+  const changIcon = gsap.to(icon.value, {
+    morphSVG: {
+      shape: 'M156 160 L484 480 M156 480 L484 160',
+    },
+    strokeWidth: 65,
+  })
+  changIcon.pause(0)
+
+  function clickImg() {
+    photobox.if_movable = false
+    displayImg.value = true
+
+    gsap.to(mask.value, { display: 'block', opacity: 0.85, duration: DURATION.instant })
+    gsap.to(currentImg, { display: 'block', opacity: 1, duration: DURATION.base })
+
+    changIcon.play(0)
+
+    window.removeEventListener('mousemove', mouseRotate)
+  }
+
+  function closeImg() {
+    displayImg.value = false
+
+    gsap.to(mask.value, { display: 'none', opacity: 0, duration: DURATION.instant })
+    gsap.to(currentImg, { display: 'none', opacity: 0, duration: DURATION.base })
+
+    changIcon.reverse()
+
+    window.addEventListener('mousemove', mouseRotate)
   }
 
   function resize() {
@@ -145,15 +194,41 @@ onMounted(() => {
       // 当图片加载完成之后，创建对应图片数据并添加到img_data中
       img.onload = () => {
         // 计算该序号图片处于第几行第几列
-        const col_index = i % photobox.row_max
         const line_index = Math.floor(i / photobox.row_max)
+        const col_index = i % photobox.row_max
         // 通过行列序号算出xy坐标
         const x: number = col_index * (photobox.img_width + photobox.img_margin)
-        const y: number = line_index * (photobox.img_height + photobox.img_margin)
+        const y: number =
+          col_index % 2 == 0
+            ? line_index * (photobox.img_height + photobox.img_margin)
+            : line_index * (photobox.img_height + photobox.img_margin) - photobox.img_height
+        // 裁切圆角
+        content?.save()
+        content?.beginPath()
+        content?.moveTo(x + photobox.img_radius, y)
+        content?.arcTo(
+          x + photobox.img_width,
+          y,
+          x + photobox.img_width,
+          y + photobox.img_height,
+          photobox.img_radius,
+        )
+        content?.arcTo(
+          x + photobox.img_width,
+          y + photobox.img_height,
+          x,
+          y + photobox.img_height,
+          photobox.img_radius,
+        )
+        content?.arcTo(x, y + photobox.img_height, x, y, photobox.img_radius)
+        content?.arcTo(x, y, x + photobox.img_width, y, photobox.img_radius)
+        content?.closePath()
+        content?.clip()
         // 将其添加到img_data中
         photobox.img_data.push({ img, x, y })
         // 创建完成之后就绘制一次，确保在进入页面的时候，图片会全部显示
         content!.drawImage(img, x, y, photobox.img_width, photobox.img_height)
+        content?.restore()
       }
     }
   }
@@ -165,10 +240,13 @@ onMounted(() => {
     canvas!.addEventListener('mousedown', () => {
       photobox.if_movable = true
     })
-    // 当鼠标弹起时，图片无法被移动，并且调用check_img函数，获取当前鼠标所指向的图片
-    window.onmouseup = (e) => {
-      photobox.if_movable = false
+    // 调用check_img函数，获取当前鼠标所指向的图片
+    canvas!.addEventListener('mouseup', (e) => {
       check_img(e.x, e.y)
+    })
+    // 当鼠标弹起时，图片无法被移动
+    window.onmouseup = () => {
+      photobox.if_movable = false
     }
     // 当鼠标离开选区时，图片无法被移动，
     window.onmouseleave = () => {
@@ -178,7 +256,7 @@ onMounted(() => {
     window.onmousemove = (e) => {
       // if_movable为flase则不可以移动图片，即鼠标未按下时
       if (!photobox.if_movable) return 0
-      move_imgs(e.movementX, e.movementY)
+      move_imgs(e.movementX * 2, e.movementY * 2)
     }
   }
 
@@ -201,7 +279,29 @@ onMounted(() => {
         img.y -= photobox.total_height + photobox.img_margin
       if (img.y < -photobox.img_height) img.y += photobox.total_height + photobox.img_margin
       // 绘制图片，更新画布
+      content?.save()
+      content?.beginPath()
+      content?.moveTo(img.x + photobox.img_radius, img.y)
+      content?.arcTo(
+        img.x + photobox.img_width,
+        img.y,
+        img.x + photobox.img_width,
+        img.y + photobox.img_height,
+        photobox.img_radius,
+      )
+      content?.arcTo(
+        img.x + photobox.img_width,
+        img.y + photobox.img_height,
+        img.x,
+        img.y + photobox.img_height,
+        photobox.img_radius,
+      )
+      content?.arcTo(img.x, img.y + photobox.img_height, img.x, img.y, photobox.img_radius)
+      content?.arcTo(img.x, img.y, img.x + photobox.img_width, img.y, photobox.img_radius)
+      content?.closePath()
+      content?.clip()
       content!.drawImage(img.img, img.x, img.y, photobox.img_width, photobox.img_height)
+      content?.restore()
     })
   }
 
@@ -216,7 +316,11 @@ onMounted(() => {
         y < img.y + photobox.img_height,
     )
     // 如果存在，则输出
-    if (img) console.log(img, img.img)
+    if (img && !displayImg.value) {
+      currentImg!.src = img.img.src
+
+      clickImg()
+    }
   }
 
   // 初始化
@@ -224,10 +328,6 @@ onMounted(() => {
 
   gsap.set(canvas, {
     scale: 1.1,
-  })
-
-  gsap.set(mouse.value, {
-    scale: 0,
   })
 
   xTo = gsap.quickTo(mouse.value, 'x', { duration: DURATION.fast })
@@ -246,10 +346,29 @@ onMounted(() => {
     bottom: 0,
   })
 
-  const mouseIn = gsap.to(mouse.value, {
-    scale: 1,
+  mouseRotate = (e: Event) => {
+    const currentX = (e as MouseEvent).clientX
+    const currentY = (e as MouseEvent).clientY
+
+    const deltaX = currentX - mouseX
+    const deltaY = currentY - mouseY == 0 ? 0.01 : currentY - mouseY
+
+    const newDegree = Math.abs(Math.atan2(deltaX, deltaY) * (180 / Math.PI))
+    const deltaDegree = Math.abs(newDegree - oldDegree)
+
+    if (deltaDegree >= 5 || deltaDegree <= 45)
+      gsap.to(mouse.value, { rotate: newDegree, duration: DURATION.instant })
+
+    oldDegree = newDegree
+    mouseX = currentX
+    mouseY = currentY
+  }
+
+  const mouseOut = gsap.to(mouse.value, {
+    scale: 0,
+    duration: DURATION.slow,
   })
-  mouseIn.pause()
+  mouseOut.pause()
 
   const canvasScale = gsap.to(canvas, {
     scale: 1,
@@ -266,7 +385,6 @@ onMounted(() => {
     top.play(0)
     right.play(0)
     bottom.play(0)
-    mouseIn.play(0)
     canvasScale.play(0)
   }
 
@@ -275,19 +393,32 @@ onMounted(() => {
     top.reverse()
     right.reverse()
     bottom.reverse()
-    mouseIn.reverse()
     canvasScale.reverse()
+    gsap.to(mouse.value, { rotate: 0, duration: DURATION.instant })
   }
 
+  mask.value.addEventListener('click', () => {
+    closeImg()
+  })
+
   canvas.addEventListener('mousedown', inStage)
+  container.value.addEventListener('mouseenter', () => {
+    mouseOut.reverse()
+  })
+  container.value.addEventListener('mouseleave', () => {
+    mouseOut.play(0)
+  })
+
   window.addEventListener('mouseup', outStage)
   window.addEventListener('mousemove', moveMouse)
+  window.addEventListener('mousemove', mouseRotate)
 })
 
 onUnmounted(() => {
   window.removeEventListener('mousedown', inStage)
   window.removeEventListener('mmouseup', outStage)
   window.removeEventListener('mousemove', moveMouse)
+  window.removeEventListener('mousemove', mouseRotate)
   window.onmouseup = null
   window.onmousemove = null
   window.onmouseleave = null
@@ -295,54 +426,68 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="w-screen h-screen relative">
+  <section class="w-screen h-screen relative" ref="container">
     <canvas id="photo-canvas"></canvas>
 
-    <div class="absolute top-0 left-0 z-50 w-screen h-screen pointer-events-none" ref="mask">
-      <img src="" alt="" id="currentImg" />
-      <div class=""></div>
-    </div>
+    <div
+      class="absolute top-0 left-0 z-10 w-screen h-screen bg-(--black) opacity-0"
+      style="display: none"
+      ref="mask"
+    ></div>
+    <img
+      src=""
+      id="currentImg"
+      class="h-4/5 absolute left-1/2 top-1/2 -translate-1/2 z-20 opacity-0"
+      style="display: none"
+    />
 
     <div
-      class="bg-(--green) w-25 h-25 rounded-full absolute left-0 top-0 -translate-1/2 z-10 flex flex-col justify-between pointer-events-none"
+      class="bg-(--green) w-28 h-28 rounded-full absolute top-0 left-0 -translate-1/2 z-30 pointer-events-none"
       ref="mouse"
     >
-      <div class="w-1/2 h-1/2 rotate-225 self-start translate-2">
-        <ArrowRight color="#171717" />
+      <div class="flex justify-center items-center p-3">
+        <svg viewBox="0 0 640 640" width="100%" height="100%" class="origin-center scale-80">
+          <path
+            d="M408 64L552 64C565.3 64 576 74.7 576 88L576 232C576 241.7 570.2 250.5 561.2 254.2C552.2 257.9 541.9 255.9 535 249L496 210L409 297C399.6 306.4 384.4 306.4 375.1 297L343.1 265C333.7 255.6 333.7 240.4 343.1 231.1L430.1 144.1L391.1 105.1C384.2 98.2 382.2 87.9 385.9 78.9C389.6 69.9 398.3 64 408 64zM232 576L88 576C74.7 576 64 565.3 64 552L64 408C64 398.3 69.8 389.5 78.8 385.8C87.8 382.1 98.1 384.2 105 391L144 430L231 343C240.4 333.6 255.6 333.6 264.9 343L296.9 375C306.3 384.4 306.3 399.6 296.9 408.9L209.9 495.9L248.9 534.9C255.8 541.8 257.8 552.1 254.1 561.1C250.4 570.1 241.7 576 232 576z"
+            ref="icon"
+            class="stroke-(--black) fill-(--black)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
       </div>
-      <div class="w-1/2 h-1/2 rotate-45 self-end -translate-2"><ArrowRight color="#171717" /></div>
     </div>
 
     <div
-      class="absolute w-16 h-screen -left-16 top-0 z-1 bg-(--green) font-OutFit text-(--black) text-[3rem] leading-16 vertical-text"
+      class="absolute w-[4vw] left-[-4.5vw] top-0 z-1 bg-(--green) font-OutFit text-(--black) vertical-text"
       ref="leftOuter"
     >
-      <div class="left-brand text-nowrap w-full h-full">
+      <div class="left-brand text-nowrap w-full text-[3vw] leading-[4vw]">
         DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ←
       </div>
     </div>
     <div
-      class="absolute w-screen h-16 -top-16 left-0 z-1 bg-(--green) font-OutFit text-(--black) text-[3rem] leading-16"
+      class="absolute h-[4vw] top-[-4.5vw] left-0 z-1 bg-(--green) font-OutFit text-(--black)"
       ref="topOuter"
     >
-      <div class="top-brand text-nowrap w-full h-full">
+      <div class="top-brand text-nowrap h-full text-[3vw] leading-[4vw]">
         DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ← DRAG ←
         DRAG ←
       </div>
     </div>
     <div
-      class="absolute w-16 h-screen -right-16 top-0 bg-(--green) font-OutFit text-(--black) text-[3rem] leading-16 vertical-text"
+      class="absolute w-[4vw] right-[-4.5vw] top-0 bg-(--green) font-OutFit text-(--black) vertical-text"
       ref="rightOuter"
     >
-      <div class="right-brand text-nowrap w-full h-full">
+      <div class="right-brand text-nowrap w-full text-[3vw] leading-[4vw]">
         DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG →
       </div>
     </div>
     <div
-      class="absolute w-screen h-16 -bottom-16 left-0 bg-(--green) font-OutFit text-(--black) text-[3rem] leading-16"
+      class="absolute h-[4vw] bottom-[-4.5vw] left-0 bg-(--green) font-OutFit text-(--black)"
       ref="bottomOuter"
     >
-      <div class="bottom-brand text-nowrap w-full h-full">
+      <div class="bottom-brand text-nowrap h-full text-[3vw] leading-[4vw]">
         DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG → DRAG →
         DRAG →
       </div>
@@ -357,28 +502,32 @@ onUnmounted(() => {
 
 .top-brand {
   animation: goRight var(--motion-duration-cinematic) infinite var(--motion-ease-linear) !important;
+  word-spacing: 2vw;
 }
 
 .bottom-brand {
   animation: goRight var(--motion-duration-cinematic) infinite reverse var(--motion-ease-linear) !important;
+  word-spacing: 2vw;
 }
 
 @keyframes goRight {
   from {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
 
   to {
-    transform: translateX(-75%);
+    transform: translateX(-50.2vw);
   }
 }
 
 .left-brand {
   animation: goBottom var(--motion-duration-cinematic) infinite var(--motion-ease-linear) !important;
+  word-spacing: 2vw;
 }
 
 .right-brand {
   animation: goBottom var(--motion-duration-cinematic) infinite reverse var(--motion-ease-linear) !important;
+  word-spacing: 2vw;
 }
 
 @keyframes goBottom {
@@ -387,7 +536,7 @@ onUnmounted(() => {
   }
 
   to {
-    transform: translateY(-85%);
+    transform: translateY(-50.2vw);
   }
 }
 </style>

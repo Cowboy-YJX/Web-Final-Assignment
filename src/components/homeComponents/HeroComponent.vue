@@ -4,22 +4,44 @@ import { defineAsyncComponent, onMounted, ref } from 'vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
+import { SplitText } from 'gsap/SplitText'
 import { DURATION, EASE, motionScope } from '@animation'
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin)
+gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText)
 
 const HeroShaderCanvas = defineAsyncComponent(() => import('./HeroShaderCanvas.vue'))
 
 const secContainer = ref<Element | null>(null)
 const ask = ref<Element | null>(null)
+const scrollHint = ref<Element | null>(null)
 
 onMounted(() => {
   const aboutMe = document.querySelector('.about-me')
-  const scrollHint = document.querySelectorAll('.scroll-icon')
+  const scrollIcon = document.querySelectorAll('.scroll-icon')
+  const title = document.querySelector('.hero-title')
 
   if (!secContainer.value) return
   if (!ask.value) return
+  if (!scrollHint.value) return
   if (!aboutMe) return
-  if (!scrollHint) return
+  if (!scrollIcon) return
+  if (!title) return
+
+  const split = SplitText.create(title, { type: 'lines' })
+  const startTl = gsap.timeline()
+  startTl.from(split.lines, {
+    stagger: {
+      each: DURATION.fast,
+    },
+    delay: 1.2,
+    duration: DURATION.scene,
+    xPercent: -35,
+    opacity: 0,
+    ease: EASE.spring,
+  })
+  startTl.from(scrollHint.value, {
+    y: 15,
+    opacity: 0,
+  })
 
   gsap.to(secContainer.value, {
     scrollTrigger: {
@@ -32,7 +54,7 @@ onMounted(() => {
     },
   })
 
-  gsap.from(scrollHint, {
+  gsap.from(scrollIcon, {
     opacity: 0,
     stagger: DURATION.slow,
     duration: DURATION.slow,
@@ -60,12 +82,14 @@ onMounted(() => {
     <HeroShaderCanvas />
 
     <div
-      class="hero-title w-screen h-screen relative px-[5vw] pt-[17vh] text-[10em] font-OutFit font-black leading-40 text-center z-10 pointer-events-none"
+      class="hero-title w-screen h-screen relative px-[5vw] pt-[17vh] text-[16vh] leading-[18vh] font-OutFit font-black text-center z-10 pointer-events-none"
     >
       BE COOL!<br />
       <span class="text-(--green)">CREATIVE!</span><br />
       <span class="border-text">AND</span> COWBOY!
+    </div>
 
+    <div class="w-screen text-center absolute tpo-[92vh]" ref="scrollHint">
       <svg viewBox="0 0 120 150" class="absolute bottom-[7vh] left-1/2 -translate-1/2 w-10">
         <path
           d="M10 10 L60 40 L110 10"

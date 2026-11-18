@@ -12,17 +12,17 @@ import { nextTick, onMounted } from 'vue'
 const { isLoading } = storeToRefs(useGloballAnimationStore())
 
 /** 开屏最小停留时间 */
-// const MIN_LOADING_MS = 900
+const MIN_LOADING_MS = 900
 /** 超时时间 */
-const LOADING_TIMEOUT_MS = 10000
+const LOADING_TIMEOUT_MS = 1000
 
-// function waitForWindowLoad(): Promise<void> {
-//   if (document.readyState === 'complete') return Promise.resolve()
+function waitForWindowLoad(): Promise<void> {
+  if (document.readyState === 'complete') return Promise.resolve()
 
-//   return new Promise((resolve) => {
-//     window.addEventListener('load', () => resolve(), { once: true })
-//   })
-// }
+  return new Promise((resolve) => {
+    window.addEventListener('load', () => resolve(), { once: true })
+  })
+}
 
 onMounted(async () => {
   isLoading.value = true
@@ -35,22 +35,19 @@ onMounted(async () => {
     })
   })
 
-  // const startedAt = performance.now()
+  const startedAt = performance.now()
 
-  // await Promise.race([
-  //   Promise.all([waitForWindowLoad(), document.fonts?.ready ?? Promise.resolve()]),
-  //   new Promise((resolve) => setTimeout(resolve, LOADING_TIMEOUT_MS)),
-  // ])
+  await Promise.race([
+    Promise.all([waitForWindowLoad(), document.fonts?.ready ?? Promise.resolve()]),
+    new Promise((resolve) => setTimeout(resolve, LOADING_TIMEOUT_MS)),
+  ])
 
-  // const remaining = MIN_LOADING_MS - (performance.now() - startedAt)
-  // if (remaining > 0) {
-  //   await new Promise((resolve) => setTimeout(resolve, remaining))
-  // }
+  const remaining = MIN_LOADING_MS - (performance.now() - startedAt)
+  if (remaining > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remaining))
+  }
 
-  // isLoading.value = false
-  setTimeout(() => {
-    isLoading.value = false
-  }, LOADING_TIMEOUT_MS)
+  isLoading.value = false
 })
 </script>
 
