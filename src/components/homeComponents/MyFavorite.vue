@@ -6,13 +6,13 @@ import { DURATION, EASE } from '@animation'
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 import { imageLeftEnter } from '@utils/aniamtion/enterImage'
-import { textEnterMask } from '@utils/aniamtion/enterText'
+import { textEnter, textEnterMask } from '@utils/aniamtion/enterText'
 
 import Logo from '@icons/Logo.vue'
 
 import { onMounted, ref } from 'vue'
 
-import test from '@assets/photos/two.jpg'
+import happy from '@assets/photos/happy.jpg'
 
 const container = ref<Element | null>(null)
 const outer = ref<Element | null>(null)
@@ -22,10 +22,13 @@ const three = ref<Element | null>(null)
 const image = ref<Element | null>(null)
 const topTitle = ref<Element | null>(null)
 const bottomTitle = ref<Element | null>(null)
+const centerTitle = ref<Element | null>(null)
 const textPath = ref<SVGPathElement | null>(null)
 const blessing = ref<Element | null>(null)
 const thanks = ref<Element | null>(null)
 const infinite = ref<Element | null>(null)
+const logo = ref<Element | null>(null)
+const oneTitle = ref<Element | null>(null)
 
 const textLength: { length: number; offset: number } = { length: 0, offset: 0 }
 const tagItems = ['MUSIC', 'ANIMES', 'GAMES', 'COMICS', 'MOVIE']
@@ -47,6 +50,9 @@ onMounted(() => {
   if (!blessing.value) return
   if (!thanks.value) return
   if (!infinite.value) return
+  if (!centerTitle.value) return
+  if (!oneTitle.value) return
+  if (!logo.value) return
   if (!tags) return
   if (!head) return
   if (!tail) return
@@ -81,23 +87,26 @@ onMounted(() => {
     ease: EASE.linear,
   })
 
-  const tagText = SplitText.create(tags, { type: 'words' })
-  gsap.from(one.value, {
+  const oneTitleTl = textEnterMask(oneTitle.value, 'lines', 'y')
+  const oneTl = gsap.timeline({
     scrollTrigger: {
       trigger: one.value,
       containerAnimation: horizon,
       start: 'left left',
     },
-    opacity: 0,
-    yPercent: 10,
   })
-  const tagTl = gsap.timeline({
-    scrollTrigger: {
-      trigger: one.value,
-      containerAnimation: horizon,
-      start: 'right 95%',
+  oneTl.add(oneTitleTl!)
+  oneTl.from(
+    logo.value,
+    {
+      yPercent: 20,
+      opacity: 0,
     },
-  })
+    0.3,
+  )
+
+  const tagText = SplitText.create(tags, { type: 'words' })
+  const tagTl = gsap.timeline()
   tagTl.from(tags, {
     scale: 0,
     ease: EASE.spring,
@@ -117,6 +126,7 @@ onMounted(() => {
     },
     '<+0.1',
   )
+  oneTl.add(tagTl, 0.5)
 
   const imageTl = imageLeftEnter(image.value)
   const blessingTl = textEnterMask(blessing.value, 'lines', 'y', DURATION.instant)
@@ -144,6 +154,13 @@ onMounted(() => {
     },
   })
 
+  const titles = [topTitle.value, centerTitle.value, bottomTitle.value]
+  const titleInTl: GSAPTimeline[] = []
+  titles.forEach((ele) => {
+    const tl = textEnter(ele, 'lines', 'y')
+    tl?.pause(0)
+    titleInTl.push(tl!)
+  })
   gsap.to(topTitle.value, {
     scrollTrigger: {
       trigger: two.value,
@@ -151,32 +168,53 @@ onMounted(() => {
       start: 'left 70%',
       containerAnimation: horizon,
     },
+    onStart: () => {
+      titleInTl[0]!.play()
+    },
     left: '10vw',
   })
-  gsap.to(bottomTitle.value, {
+  gsap.to(centerTitle.value, {
     scrollTrigger: {
       trigger: two.value,
       scrub: true,
       start: 'left 75%',
       containerAnimation: horizon,
     },
+    onStart: () => {
+      titleInTl[1]!.play()
+    },
+  })
+  gsap.to(bottomTitle.value, {
+    scrollTrigger: {
+      trigger: two.value,
+      scrub: true,
+      start: 'left 80%',
+      containerAnimation: horizon,
+    },
+    onStart: () => {
+      titleInTl[2]!.play()
+    },
     left: '10vw',
   })
 
-  const thanksTl = textEnterMask(thanks.value, 'lines', 'y', DURATION.fast)
-  thanksTl?.pause(0)
-  gsap.from(infinite.value, {
+  const thanksTextTl = textEnterMask(thanks.value, 'lines', 'y', DURATION.fast)
+  const tl = gsap.timeline({
     scrollTrigger: {
       trigger: three.value,
       containerAnimation: horizon,
       start: 'left center',
     },
-    opacity: 0,
-    yPercent: 10,
-    onStart: () => {
-      thanksTl?.play(0)
-    },
   })
+  tl.add(thanksTextTl!, 0)
+  tl.from(
+    infinite.value,
+    {
+      opacity: 0,
+      yPercent: 20,
+      ease: EASE.outSoft,
+    },
+    0.5,
+  )
 })
 </script>
 
@@ -192,7 +230,9 @@ onMounted(() => {
 
     <div class="h-[92.6vh] w-[300vw] flex justify-center items-center font-OutFit" ref="outer">
       <div class="w-screen h-full relative text-center" ref="one">
-        <div class="absolute left-1/2 -translate-x-1/2 top-7/25">MY FAVORITE AND HOBBY</div>
+        <div class="absolute left-1/2 -translate-x-1/2 top-7/25" ref="oneTitle">
+          MY FAVORITE AND HOBBY
+        </div>
 
         <div
           class="absolute left-1/2 top-3/5 -translate-1/2 w-[50vw] flex flex-wrap items-center justify-center gap-8"
@@ -210,7 +250,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="absolute w-10 h-10 left-1/2 -translate-x-1/2 bottom-5">
+        <div class="absolute w-10 h-10 left-1/2 -translate-x-1/2 bottom-5" ref="logo">
           <Logo :circle="false" />
         </div>
       </div>
@@ -219,13 +259,15 @@ onMounted(() => {
         <div class="absolute z-10 text-[8rem] left-[20vw] top-[20vh]" ref="topTitle">
           <span class="text-(--green)">PHOTOS</span>
         </div>
-        <div class="absolute text-[8rem] left-[10vw] top-1/2 -translate-y-1/2">VIDEOS</div>
+        <div class="absolute text-[8rem] left-[10vw] top-1/2 -translate-y-1/2" ref="centerTitle">
+          VIDEOS
+        </div>
         <div class="absolute text-[8rem] left-0 bottom-[20vh]" ref="bottomTitle">
           <span class="text-(--green)">MUSIC</span>
         </div>
 
         <div class="absolute h-full py-[3vh] right-[19vw] top-1/2 -translate-y-1/2 overflow-hidden">
-          <img :src="test" alt="" ref="image" class="h-full rounded-2xl" />
+          <img :src="happy" alt="" ref="image" class="h-full rounded-2xl" />
         </div>
 
         <div class="absolute right-0 bottom-[3vh] w-[18vw] text-2xl" ref="blessing">

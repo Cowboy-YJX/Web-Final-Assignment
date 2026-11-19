@@ -3,9 +3,10 @@ import gsap from 'gsap'
 import { DURATION, EASE } from '@animation'
 
 import rightImg from '@assets/svg/work.svg'
-import WeChat from '@assets/photos/QR/WeChat.jpg'
-import QQ from '@assets/photos/QR/QQ.jpg'
-import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
+// 你的个人名片
+// import WeChat from '@assets/photos/QR/WeChat.jpg'
+// import QQ from '@assets/photos/QR/QQ.jpg'
+// import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
 
 import { onMounted } from 'vue'
 
@@ -43,7 +44,8 @@ onMounted(() => {
     formData.append('email', email)
     formData.append('need', need)
 
-    fetch('https://quickform.cn/api/9s1pujmolr', {
+    // 你的API
+    fetch('', {
       method: 'POST',
       body: formData,
     })
@@ -113,15 +115,15 @@ onMounted(() => {
 
         <div class="w-full flex gap-[3vw] mt-5">
           <div class="font-ThinFit text-[14px] text-center">
-            <img :src="WeChat" alt="" class="w-20 mb-2" />
+            <!-- <img :src="WeChat" alt="" class="w-20 mb-2" /> -->
             WeChat
           </div>
           <div class="font-ThinFit text-[14px] text-center">
-            <img :src="QQ" alt="" class="w-20 mb-2" />
+            <!-- <img :src="QQ" alt="" class="w-20 mb-2" /> -->
             QQ
           </div>
           <div class="font-ThinFit text-[14px] text-center">
-            <img :src="XiaoHongShu" alt="" class="w-20 mb-2" />
+            <!-- <img :src="XiaoHongShu" alt="" class="w-20 mb-2" /> -->
             XiaoHongShu
           </div>
 

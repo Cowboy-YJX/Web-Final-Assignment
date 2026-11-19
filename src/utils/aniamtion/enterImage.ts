@@ -23,13 +23,14 @@ export function imageLeftEnter(ele: Element) {
 
   imageTl.to(ele, {
     clipPath: 'polygon(100% 0%, 100% 100%, 0% 100%, 0% 0%)',
-    ease: EASE.outStrong,
+    ease: EASE.outSoft,
+    duration: DURATION.base,
   })
 
   imageTl.from(
     ele,
     {
-      duration: DURATION.scene + 0.5,
+      duration: DURATION.scene + DURATION.base,
       scale: 2,
       ease: EASE.outSoft,
     },

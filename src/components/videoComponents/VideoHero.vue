@@ -6,7 +6,7 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import gsap from 'gsap'
 gsap.registerPlugin(TextPlugin, ScrambleTextPlugin, ScrollToPlugin)
 
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useGloballAnimationStore } from '@stores/globallAnimation'
@@ -17,22 +17,22 @@ import three from '@assets/photos/covers/video-03.webp'
 import four from '@assets/photos/covers/video-04.webp'
 import five from '@assets/photos/covers/video-05.webp'
 import six from '@assets/photos/covers/video-06.webp'
-import tv from '@assets/svg/tv.svg'
 
-import ArrowRight from '@icons/ArrowRight.vue'
+import tvSrc from '@assets/svg/tv.svg'
 
 import { textEnter, textEnterMask } from '@/utils/aniamtion/enterText'
 
 const { isScreen } = storeToRefs(useGloballAnimationStore())
 
 const toTop = ref<HTMLElement | null>(null)
-const television = ref<Element | null>(null)
-const upArrow = ref<Element | null>(null)
 const mask = ref<Element | null>(null)
 const video = ref<HTMLVideoElement | null>(null)
 const videoContainer = ref<Element | null>(null)
 const totalTitle = ref<Element | null>(null)
 const subTitle = ref<Element | null>(null)
+const upArrow = ref<Element | null>(null)
+const upText = ref<HTMLElement | null>(null)
+const tv = ref<Element | null>(null)
 
 const videoItems = [
   {
@@ -86,9 +86,9 @@ const videoItems = [
 ]
 
 const videoWords = [
-  'Do not go gentle into that good night, Old age should burn and rave at close of day; Rage, rage against the dying of the light.',
+  'Do not go gentle into that good night. Old age should burn and rave at close of day; Rage, rage against the dying of the light.',
   "When fortune smiles on something as violent and ugly as revenge, it seems proof like no other that not only does God exist, you're doing His will.",
-  "I have to believe that when my eyes are closed, the world's still there.",
+  'Birds have no consciousness, they simply fllow their instincts, singlemindedly striving upward.',
   "I hope you live a life you're proud of. If you find that you're not, I hope you have the strength to start all over again.",
 ]
 
@@ -113,13 +113,13 @@ onMounted(() => {
   if (!faultOuter) return
   if (!faultText) return
   if (!toTop.value) return
-  if (!television.value) return
-  if (!upArrow.value) return
   if (!mask.value) return
   if (!video.value) return
   if (!videoContainer.value) return
   if (!totalTitle.value) return
   if (!subTitle.value) return
+  if (!upText.value) return
+  if (!tv.value) return
 
   function clickVideo(e: Event) {
     isScreen.value = true
@@ -176,13 +176,13 @@ onMounted(() => {
         start: 'top 75%',
       },
     })
-    let timer: number | null = null
 
+    let timer: number | null = null
     videoItemTl.to(ele, {
       opacity: 1,
       onStart: () => {
         timer = setInterval(() => {
-          const xRandom = (Math.random() - 0.5) * 8
+          const xRandom = (Math.random() - 0.5) * 5
           const yRandom = (Math.random() - 0.5) * 15
           faultText[index]!.style.transform = `translate(${xRandom}%, ${yRandom}%)`
         }, 30)
@@ -257,36 +257,52 @@ onMounted(() => {
   )
   titleTl.add(subTitleTl!, '0.5')
 
-  gsap.to(television.value, {
+  gsap.to(tv.value, {
     keyframes: {
-      rotate: [5, -5],
-      scale: [1, 1.03, 1],
+      rotate: [-2, 2],
     },
-    duration: DURATION.cinematic,
-    ease: EASE.breathe,
     repeat: -1,
     yoyo: true,
+    duration: DURATION.slow,
+    ease: EASE.breathe,
   })
-
-  const springTl = gsap.timeline()
-  springTl.to(upArrow.value, {
-    yPercent: 10,
+  const hint = gsap.to(upArrow.value, {
+    yPercent: -10,
+    yoyo: true,
+    repeat: -1,
+    duration: DURATION.slow,
+    ease: EASE.breathe,
   })
-  springTl.to(upArrow.value, {
-    scale: 0,
-    yPercent: -170,
+  const spring = gsap.to([upArrow.value, tv.value], {
+    keyframes: {
+      y: [0, 100, -600],
+    },
+    ease: EASE.in,
   })
-  springTl.pause()
+  spring.pause(0)
 
   toTop.value.onclick = () => {
-    springTl.play(0)
+    hint.pause()
+    spring.play()
     gsap.to(window, {
       scrollTo: 0,
       duration: DURATION.base,
-      delay: DURATION.slow,
+      delay: DURATION.base,
       onComplete: () => {
-        springTl.pause(0)
+        spring.pause(0)
+        hint.play(0)
       },
+    })
+  }
+
+  upText.value.onmouseover = () => {
+    gsap.to(upText.value, {
+      scaleY: 1.1,
+    })
+  }
+  upText.value.onmouseleave = () => {
+    gsap.to(upText.value, {
+      scaleY: 1,
     })
   }
 
@@ -295,8 +311,6 @@ onMounted(() => {
   })
   videoBg.addEventListener('click', closeVideo)
 })
-
-onUnmounted(() => {})
 </script>
 
 <template>
@@ -330,7 +344,7 @@ onUnmounted(() => {})
             class="absolute top-0 left-0 z-10 bg-(--white) w-full h-full flex justify-center items-center fault-outer"
           >
             <span
-              class="font-OutFit text-(--black) text-3xl relative z-10 fault-text"
+              class="font-OutFit text-(--black) text-4xl relative z-10 fault-text"
               data-text="NO SIGNAL"
             >
               NO SIGNAL
@@ -357,19 +371,32 @@ onUnmounted(() => {})
       </div>
     </div>
 
-    <div class="w-screen px-[15vw] pb-[8vh] mt-[20vh] font-ThinFit text-center">
-      <div class="w-full h-[30vw] flex flex-col justify-center items-center">
-        <div class="w-[20vw] h-[20vw] cursor-pointer relative overflow-hidden" ref="toTop">
-          <img :src="tv" alt="" ref="television" class="relative z-10" />
-          <div class="absolute top-9/20 left-1/2 -translate-1/2 w-1/4 -rotate-90" ref="upArrow">
-            <ArrowRight />
-          </div>
-        </div>
+    <div class="w-screen px-[16vw] pb-[8vh] mt-[15vh] font-ThinFit text-center">
+      <div class="w-full h-[30vw] relative cursor-pointer" ref="toTop">
+        <svg
+          viewBox="0 0 1125 700"
+          class="w-[15vw] absolute left-1/2 top-1/2 -translate-1/2 overflow-visible"
+        >
+          <polygon
+            points="626.14,389.86 539.72,389.86 539.72,543.29 375.06,543.29 375.06,389.86 288.64,389.86 457.39,198.74"
+            class="fill-(--green)"
+            ref="upArrow"
+          />
+          <image :href="tvSrc" width="1125" y="-25" class="origin-center" ref="tv" />
+        </svg>
 
-        <div class="font-OutFit text-(--green) text-[5rem]">BACK TO UP</div>
+        <div
+          class="font-OutFit text-(--green) text-[5rem] absolute left-1/2 bottom-[4vw] -translate-x-1/2"
+          ref="upText"
+        >
+          BACK TO UP
+        </div>
       </div>
 
-      <div class="w-full flex gap-[3vw] justify-center items-start">
+      <div
+        class="w-full flex gap-[5vw] justify-center items-start text-left"
+        style="letter-spacing: 1px"
+      >
         <div class="flex-1" v-for="(item, index) in videoWords" :key="index">
           {{ item }}
         </div>
@@ -441,7 +468,7 @@ onUnmounted(() => {})
 
     position: absolute;
     left: 0;
-    transform: translate(-2%, 0);
+    transform: translate(-1%, 0);
 
     color: blue !important;
     mix-blend-mode: darken;
@@ -452,7 +479,7 @@ onUnmounted(() => {})
 
     position: absolute;
     left: 0;
-    transform: translate(2%, 0);
+    transform: translate(1%, 0);
 
     color: red !important;
     mix-blend-mode: darken;

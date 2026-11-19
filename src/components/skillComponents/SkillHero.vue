@@ -400,6 +400,11 @@ onUnmounted(() => {
         class="relative z-10 w-1/2 h-full overflow-hidden bg-(--green) skill-left"
       >
         <div
+          class="text-(--black) font-OutFit text-[2rem] absolute z-10 left-1/2 top-7/20 -translate-1/2 w-full text-center"
+        >
+          WHAT SPECIFIC SKILLS DO I HAVE?
+        </div>
+        <div
           class="text-(--black) font-OutFit text-[8rem] absolute z-10 left-1/2 top-1/2 -translate-1/2"
         >
           {{ skills[currentSkill]!.name }}

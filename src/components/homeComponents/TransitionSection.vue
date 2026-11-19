@@ -90,6 +90,7 @@ onMounted(() => {
       start: 'bottom bottom',
       scrub: true,
     },
+    ease: EASE.inOut,
     width: '80vw',
     height: '120vh',
   })

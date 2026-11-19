@@ -30,13 +30,13 @@ onMounted(() => {
   const startTl = gsap.timeline()
   startTl.from(split.lines, {
     stagger: {
-      each: DURATION.fast,
+      amount: DURATION.base,
     },
     delay: 1.2,
     duration: DURATION.scene,
-    xPercent: -35,
+    xPercent: -30,
     opacity: 0,
-    ease: EASE.spring,
+    ease: EASE.out,
   })
   startTl.from(scrollHint.value, {
     y: 15,

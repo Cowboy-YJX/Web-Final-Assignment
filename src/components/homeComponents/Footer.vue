@@ -6,13 +6,13 @@ import { RouterLink } from 'vue-router'
 
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { textEnterMask } from '@utils/aniamtion/enterText'
 import { iconShake } from '@utils/aniamtion/iconHover'
 gsap.registerPlugin(ScrollTrigger)
 
-import WeChat from '@assets/photos/QR/WeChat.jpg'
-import QQ from '@assets/photos/QR/QQ.jpg'
-import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
+// 你的个人名片
+// import WeChat from '@assets/photos/QR/WeChat.jpg'
+// import QQ from '@assets/photos/QR/QQ.jpg'
+// import XiaoHongShu from '@assets/photos/QR/XiaoHongShu.jpg'
 
 import Github from '@icons/Github.vue'
 import Bilibili from '@icons/Bilibili.vue'
@@ -50,15 +50,15 @@ onMounted(() => {
   <footer class="w-screen h-[36vh] pt-20 bg-(--white) relative">
     <div class="w-screen flex justify-center items-center gap-[15vw]">
       <div class="w-[12vw] h-[8vw] rounded-2xl text-center text-(--black) font-OutFit">
-        <img :src="WeChat" alt="" class="w-[7vw] relative left-[2.5vw]" />
+        <!-- <img :src="WeChat" alt="" class="w-[7vw] relative left-[2.5vw]" /> -->
         WeChat:<span class="font-ThinFit"> Cowboy</span>
       </div>
       <div class="w-[12vw] h-[8vw] rounded-2xl text-center text-(--black) font-OutFit relative">
-        <img :src="QQ" alt="" class="w-[7vw] relative left-[2.5vw]" />
+        <!-- <img :src="QQ" alt="" class="w-[7vw] relative left-[2.5vw]" /> -->
         QQ: <span class="font-ThinFit">Cowboy</span>
       </div>
       <div class="w-[12vw] h-[8vw] rounded-2xl text-center text-(--black) font-OutFit relative">
-        <img :src="XiaoHongShu" alt="" class="w-[7vw] relative left-[2.5vw]" />
+        <!-- <img :src="XiaoHongShu" alt="" class="w-[7vw] relative left-[2.5vw]" /> -->
         XiaoHongShu: <span class="font-ThinFit">Cowboy</span>
       </div>
     </div>

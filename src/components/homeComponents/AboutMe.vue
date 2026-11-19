@@ -108,7 +108,7 @@ onMounted(() => {
       scrollTrigger: {
         trigger: container.value,
         start: 'top 55%',
-        end: 'bottom 70%',
+        end: 'bottom 80%',
         scrub: true,
         once: true,
       },
@@ -122,7 +122,8 @@ onMounted(() => {
       trigger: container.value,
       start: 'top top',
     },
-    yPercent: 20,
+    xPercent: 20,
+    duration: DURATION.slow,
     opacity: 0,
   })
 
@@ -131,7 +132,8 @@ onMounted(() => {
       trigger: container.value,
       start: 'center center',
     },
-    yPercent: 20,
+    xPercent: -20,
+    duration: DURATION.slow,
     opacity: 0,
   })
 
@@ -140,7 +142,8 @@ onMounted(() => {
       trigger: container.value,
       start: 'bottom bottom',
     },
-    yPercent: 20,
+    xPercent: 20,
+    duration: DURATION.slow,
     opacity: 0,
   })
 
